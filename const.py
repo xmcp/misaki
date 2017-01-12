@@ -16,3 +16,4 @@ mouse_evt_name={
     'mouse right down': [True,2],
     'mouse right up': [False,2],
 }
+tip_format='{time} '

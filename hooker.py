@@ -3,11 +3,8 @@
 
 import pyHook
 import pythoncom
-import Queue as queue
+import multiprocessing
 import const
-
-keyqueue=queue.Queue()
-mousequeue=queue.Queue()
 
 def keydown(event):
     keyqueue.put([True,event.Key])
@@ -29,7 +26,10 @@ def mousewheel(event):
     mousequeue.put([event.Wheel<0,-1])
     return True
     
-def run_forever():
+def run_forever(kq,mq):
+    global keyqueue,mousequeue
+    keyqueue=kq
+    mousequeue=mq
     hm=pyHook.HookManager()
     
     hm.SubscribeKeyDown(keydown)
@@ -40,5 +40,6 @@ def run_forever():
     
     hm.HookKeyboard()
     hm.HookMouse()
+    print 'hook start'
     while True:
         pythoncom.PumpWaitingMessages()
