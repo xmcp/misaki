@@ -13,6 +13,7 @@ from Tkinter import *
 from ttk import *
 
 if __name__=='__main__':
+    multiprocessing.freeze_support()
     keyqueue=multiprocessing.Queue()
     mousequeue=multiprocessing.Queue()
 
@@ -45,6 +46,16 @@ if __name__=='__main__':
     for ind,lbl in enumerate(mousebtn):
         lbl.grid(row=0,column=ind)
 
+_current_callbacks={}
+def register_after(delay,channel,callback):
+    def wrapped(*__,**_):
+        del _current_callbacks[channel]
+        callback(*__,**_)
+    
+    if channel in _current_callbacks:
+        tk.after_cancel(_current_callbacks[channel])
+    _current_callbacks[channel]=tk.after(delay,wrapped)
+        
 class Keyboarder:
     def __init__(self):
         self.labels={}
@@ -102,7 +113,7 @@ class Keyboarder:
             
 class Mouser:
     def __init__(self):
-        self.after_id=None
+        pass
         
     def push(self,key):
         print 'mouse down',key
@@ -110,7 +121,9 @@ class Mouser:
     
     def pop(self,key):
         print 'mouse up',key
-        mousebtn[key]['style']='BtnOff.TLabel'
+        def holy_after():
+            mousebtn[key]['style']='BtnOff.TLabel'
+        register_after(50,'mouse %s'%key,holy_after)
         
     def wheel(self,scroll_down):
         mousebtn[1]['style']='BtnOn.TLabel'
@@ -118,9 +131,7 @@ class Mouser:
         def holy_after():
             mousebtn[1]['text']='|'
             mousebtn[1]['style']='BtnOff.TLabel'
-        if self.after_id:
-            tk.after_cancel(self.after_id)
-        self.after_id=tk.after(100,holy_after)
+        register_after(100,'wheel',holy_after)
 
 mckey=Keyboarder()
 mcmouse=Mouser()
