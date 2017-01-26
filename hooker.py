@@ -41,5 +41,4 @@ def run_forever(kq,mq):
     hm.HookKeyboard()
     hm.HookMouse()
     print 'hook start'
-    while True:
-        pythoncom.PumpWaitingMessages()
+    pythoncom.PumpMessages()
