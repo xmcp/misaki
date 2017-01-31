@@ -1,5 +1,6 @@
 #! python2
 #coding=utf-8
+from __future__ import print_function
 
 import hooker
 import const
@@ -11,6 +12,9 @@ import time
 
 from Tkinter import *
 from ttk import *
+
+if not const.print_log:
+    print=lambda *__,**_:None
 
 if __name__=='__main__':
     multiprocessing.freeze_support()
@@ -24,7 +28,7 @@ if __name__=='__main__':
     tk.attributes('-topmost',True)
     tk.resizable(True,False)
     tk.configure(background='black')
-    tk.geometry('600x27')
+    tk.geometry('800x27')
     s=Style(tk)
     s.configure('BtnOn.TLabel',background='yellow',foreground='black',font='Consolas -20')
     s.configure('BtnOff.TLabel',background='#666',foreground='white',font='Consolas -20')
@@ -66,15 +70,15 @@ class Keyboarder:
     def _clear(self):
         if not self.labels:
             return
-        print 'clear label',len(self.labels)
+        print('clear label',len(self.labels))
         def holy_after():
             for item in self.labels.values():
                 item.grid_forget()
             self.labels={}
             self.clearlock.set()
-            print '-- clear ok'
+            print('-- clear ok')
         self.lbindex=0
-        print '-- clear start'
+        print('-- clear start')
         tk.after_idle(holy_after)
         self.clearlock.wait()
         self.clearlock.clear()
@@ -82,19 +86,19 @@ class Keyboarder:
     def push(self,key):
         if not self.alive_keys: # clear history
             self._clear()
-            print '-- clear continue'
+            print('-- clear continue')
         self.alive_keys.add(key)
         
         if key not in self.labels:
-            print 'key down',key
+            print('key down',key)
             def holy_after():
                 self.labels[key]=Label(keyframe,text=key,style='BtnOn.TLabel')
                 self.labels[key].grid(row=0,column=self.lbindex)
                 self.lbindex+=1
-                #print 'key down-done',len(self.alive_keys)
+                #print('key down-done',len(self.alive_keys))
             tk.after_idle(holy_after)
         else:
-            print 'key revive',key
+            print('key revive',key)
             self.labels[key]['style']='BtnOn.TLabel'
     
     def pop(self,key):
@@ -102,9 +106,9 @@ class Keyboarder:
         def holy_after():
             if key in self.labels:
                 self.labels[key]['style']='BtnOff.TLabel'
-                print 'key up',key,'/ alive keys =',len(self.alive_keys)
+                print('key up',key,'/ alive keys =',len(self.alive_keys))
             else:
-                print 'key up-ignored',key
+                print('key up-ignored',key)
         tk.after(50,holy_after)
 
     def try_clear(self):
@@ -116,11 +120,11 @@ class Mouser:
         pass
         
     def push(self,key):
-        print 'mouse down',key
+        print('mouse down',key)
         mousebtn[key]['style']='BtnOn.TLabel'
     
     def pop(self,key):
-        print 'mouse up',key
+        print('mouse up',key)
         def holy_after():
             mousebtn[key]['style']='BtnOff.TLabel'
         register_after(50,'mouse %s'%key,holy_after)
@@ -157,7 +161,6 @@ def key_fetcher():
                     tk.after_idle(tk.attributes,'-alpha',alpha_flag)
                     tk.after_idle(tk.attributes,'-toolwindow',1-alpha_flag)
                     #tk.after_idle(tk.focus_force)
-                    print alpha_flag
             else: # keyup
                 mckey.pop(dispcode)
 
@@ -173,7 +176,7 @@ def mouse_fetcher():
 
 def tipper():
     while True:
-        tipvar.set(const.tip_format.replace('{time}',time.strftime('%H:%M:%S',time.localtime())))
+        tipvar.set(time.strftime(const.tip_format,time.localtime()))
         time.sleep(1-time.time()%1+.1)
 
 if __name__=='__main__':
